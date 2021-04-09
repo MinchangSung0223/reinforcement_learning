@@ -1,4 +1,4 @@
-
+%% 그림 2.4
 clc;
 clear;
 close all;
