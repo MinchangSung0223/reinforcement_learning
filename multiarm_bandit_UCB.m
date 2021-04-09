@@ -3,9 +3,9 @@ clc;
 clear;
 close all;
 %Define q*(a)
-epsilon_list = [0.0 0.0 0.00]
+epsilon_list = [0.1 0.0]
 
-c_ = [0 1 2];
+c_ = [0 2];
 for i = 1:1:length(epsilon_list)
 epsilon = epsilon_list(i)
 R_list = zeros(200,1000);
