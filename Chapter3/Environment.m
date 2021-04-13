@@ -40,13 +40,12 @@ classdef Environment
        
        function reward = get_reward(obj,state,action)
            next_state = obj.state_after_action(state,action);
-           next_state;
            reward = obj.reward(next_state(1)+1,next_state(2)+1);
        end
        
        function next_state=state_after_action(obj,state,action)
            action_ = obj.ACTION(action,:);
-           val = [state(1)+action_(1),state(2)+action_(2)]
+           val = [state(1)+action_(1),state(2)+action_(2)];
            next_state =  obj.check_boundary(val);
        end
 
