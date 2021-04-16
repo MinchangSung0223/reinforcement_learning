@@ -7,8 +7,10 @@ close all;
 %       12 13 14 0
 
 % s =0 은 종단 상태.
+global matrix_size
+matrix_size = 6
 
-S = [1 2 3 4 5 6 7 8 9 10 11 12 13 14 , 0];
+S = [1:1:matrix_size*matrix_size-2 , 0];
 
 %% 행동 정의
 up = 1;
@@ -20,13 +22,13 @@ A = [up down right left] % up down right left
 % 모두 같은 값을 갖는다 = 랜덤으로 4개중 하나를 선택한다.
 p = [0.25 0.25 0.25 0.25];
 % 각 상태에 대한 4개의 값을 갖는 policy table을 만든다.
-policy = repmat(p,16,1);
+policy = repmat(p,matrix_size*matrix_size,1);
 
 %% 가치 함수 초기화
 % v는 현재 상태의 가치함수
-v = zeros(16,1);
+v = zeros(matrix_size*matrix_size,1);
 % V는 다음 상태의 가치함수
-V = zeros(16,1);
+V = zeros(matrix_size*matrix_size,1);
 % 할인율
 gamma = 1;
 
@@ -35,16 +37,16 @@ gamma = 1;
 k=0
 disp("----------------------------k : "+string(k)+"----------------------------")
 disp("vk : ")
-disp(reshape(v,4,4))
+disp(reshape(v,matrix_size,matrix_size))
 disp("vk+1 : ")
-disp(reshape(V,4,4))
+disp(reshape(V,matrix_size,matrix_size))
 
 %%  POLICY EVALUATION
 while 1
     delta_V = 0
     % 시행횟수 k==1에서는 현재 가치함수를 임의의 값으로 초기화 (단, 종단상태에서의 값은 0으로)
     if k==1
-        v=-ones(16,1);
+        v=-ones(matrix_size*matrix_size,1);
         %종단 상태에서의 가치함수 값
         v(1)=0;
         v(end)=0;
@@ -76,9 +78,9 @@ while 1
 
     disp("----------------------------k : "+string(k)+"----------------------------")
     disp("vk : ")
-    disp(reshape(v,4,4))
+    disp(reshape(v,matrix_size,matrix_size))
     disp("vk+1 : ")
-    disp(reshape(V,4,4))
+    disp(reshape(V,matrix_size,matrix_size))
     v = V;
     if delta_V < 0.1
         break;
@@ -93,7 +95,7 @@ while 1
             continue;
         end
         prev_action = get_action(policy(s+1,:));
-        new_policy_temp=zeros(4,1);
+        new_policy_temp=zeros(size(policy,2),1);
         q_s_a = [];
         for a = A
                 next_s = next_state(s,a); % 행동 a 후의 s의 다음 상태 next_s
@@ -130,6 +132,7 @@ function next_s =next_state(s,a)
 %       4  5  6  7
 %       8  9  10 11
 %       12 13 14 0
+global matrix_size
     up = 1;
     down = 2;
     right = 3;
@@ -138,34 +141,34 @@ function next_s =next_state(s,a)
     %% 행동에 따른 다음 상태 정의
     
     if a ==up 
-        if sum(s==[1 2 3])>=1
+        if sum(s==[1:1:matrix_size-1])>=1
             next_s = s;        
         else
             next_s = s-4;
         end
-        if s==4
+        if s==matrix_size
             next_s  = 0;
         end
     elseif a==down
-        if sum(s==[12 13 14])>=1
+        if sum(s==[linspace((matrix_size*matrix_size-2),(matrix_size*matrix_size-matrix_size),matrix_size-1)])>=1
             next_s = s;       
         else
             next_s = s+4;
         end
-        if s==11
+        if s==matrix_size*(matrix_size-1)-1
             next_s  = 0;
         end
     elseif a==right 
-        if sum(s==[3 7 11])>=1
+        if sum(s==[matrix_size-1:matrix_size:matrix_size*(matrix_size-1)])>=1
             next_s = s;       
         else
             next_s = s+1;
         end
-        if s==14
+        if s==matrix_size*(matrix_size)-2
             next_s  = 0;
         end
     elseif a==left 
-        if sum(s==[4 8 12])>=1
+        if sum(s==[matrix_size:matrix_size:matrix_size*(matrix_size-1)])>=1
             next_s = s;       
         else
             next_s = s-1;
@@ -210,18 +213,19 @@ function p =get_policy(policy,s,a)
     p = 0.25;
 end
 function draw_policy(policy)
-    for i =0:2:8
-        plot([0 8],[i i],'k-');
-        plot([i i],[0 8],'k-');
+global matrix_size
+    for i =0:2:matrix_size*2
+        plot([0 matrix_size*2],[i i],'k-');
+        plot([i i],[0 matrix_size*2],'k-');
         hold on;
     end
-    X = [1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 ];
-    Y = [1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 ];
+    X = repmat(1:1:matrix_size,1,matrix_size);
+    Y = repelem(1:1:matrix_size,1,matrix_size);
 
     for i = 1:1:length(X)
             x = (X(i))*2-1;
-            y = (4-Y(i))*2+1;
-            if sum(i==[1,16])>=1
+            y = (matrix_size-Y(i))*2+1;
+            if sum(i==[1,matrix_size*matrix_size])>=1
                 text(x,y,string(0));
             else
                 plot([x  x],[y,y+policy(i,1)],"r-","LineWidth",3); % up
