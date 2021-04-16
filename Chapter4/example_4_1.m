@@ -36,7 +36,7 @@ for k =1:1:3
         for a = A
             next_s = next_state(s,a);
             r = get_reward(s,a);
-            value=value+(-1/4+0.25*gamma*v(next_s+1));
+            value=value+(r+gamma*v(next_s+1))/length(A);
         end
         V(s+1) = round(value,2);
 %         disp(string(s)+":"+string(V(s+1)))
@@ -106,15 +106,15 @@ end
 
 
 function r =get_reward(s,a)
-    next_s  = next_state(s,a);
-    if next_s == 0
-        r = 0;
-    else
-        r = -1;
-    end
+    r = -1;
 end
 
 
 function p =get_policy(policy,s,a)
     p = 0.25;
 end
+
+
+
+
+
