@@ -40,9 +40,8 @@ disp("vk+1 : ")
 disp(reshape(V,4,4))
 
 %%  POLICY EVALUATION
-
-for k =1:1:5
-    
+while 1
+    delta_V = 0
     % 시행횟수 k==1에서는 현재 가치함수를 임의의 값으로 초기화 (단, 종단상태에서의 값은 0으로)
     if k==1
         v=-ones(16,1);
@@ -62,13 +61,18 @@ for k =1:1:5
         for a = A
             next_s = next_state(s,a); % 행동 a 후의 s의 다음 상태 next_s
             r = get_reward(s,a); % 보상
-            % 다음 가치함수의 값 = 다음 가치함수의 값 + (보상 + 할인율*이전 가치함수(다음상태))/(행동 갯수)
+            % 다음 가치함수의 값 = 다음 가치함수의 값 + 정책*(보상 + 할인율*이전 가치함수(다음상태))
             value=value+policy(s,a)*(r+gamma*v(next_s+1));
         end
-        value = value;
         V(s+1) = round(value,2);
 %         disp(string(s)+":"+string(V(s+1)))
+        if delta_V>abs(v(s+1)-V(s+1))
+            delta_V = delta_V;
+        else
+            delta_V = abs(v(s+1)-V(s+1));
+        end
     end
+    
 
     disp("----------------------------k : "+string(k)+"----------------------------")
     disp("vk : ")
@@ -76,6 +80,9 @@ for k =1:1:5
     disp("vk+1 : ")
     disp(reshape(V,4,4))
     v = V;
+    if delta_V < 0.1
+        break;
+    end
 end
 %%  POLICY IMPROVEMENT
 new_policy = policy;
@@ -85,20 +92,23 @@ while 1
         if s==0
             continue;
         end
-        prev_action = get_action(policy(s+1,:))
+        prev_action = get_action(policy(s+1,:));
         new_policy_temp=zeros(4,1);
-        temp = [];
+        q_s_a = [];
         for a = A
                 next_s = next_state(s,a); % 행동 a 후의 s의 다음 상태 next_s
                 r = get_reward(s,a); % 보상
-                temp = [temp,r+gamma*v(next_s+1)];
+                q_s_a = [q_s_a,r+gamma*v(next_s+1)]; % 행동 가치 함수를 찾는다.
         end
-        a_list=argmax(temp);
+        % 헹동 가치 함수 중 가장 큰 값의 인덱스를 구한다.
+        a_list=argmax(q_s_a);
+        % policy를 수정한다. 여기서는 단순히 큰 값들의 개수로 확률을 만들었다.
         for j=1:1:length(a_list)
             new_policy_temp(a_list(j)) = 1/length(a_list);
         end
-        new_action=get_action(new_policy_temp')
+        new_action=get_action(new_policy_temp');
         new_policy(s+1,:)=new_policy_temp;
+        % 새로운 policy가 stable인지 아닌지 판단한다.
         if new_action-prev_action <0.0001
             stable_policy = true;
             policy = new_policy;
