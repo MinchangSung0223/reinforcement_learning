@@ -1,5 +1,5 @@
 clear;
-
+close all;
 %% 상태 정의 
 %       0  1  2  3  
 %       4  5  6  7
@@ -38,7 +38,10 @@ disp("vk : ")
 disp(reshape(v,4,4))
 disp("vk+1 : ")
 disp(reshape(V,4,4))
-for k =1:1:3
+
+%%  POLICY EVALUATION
+
+for k =1:1:5
     
     % 시행횟수 k==1에서는 현재 가치함수를 임의의 값으로 초기화 (단, 종단상태에서의 값은 0으로)
     if k==1
@@ -60,8 +63,9 @@ for k =1:1:3
             next_s = next_state(s,a); % 행동 a 후의 s의 다음 상태 next_s
             r = get_reward(s,a); % 보상
             % 다음 가치함수의 값 = 다음 가치함수의 값 + (보상 + 할인율*이전 가치함수(다음상태))/(행동 갯수)
-            value=value+(r+gamma*v(next_s+1))/length(A);
+            value=value+policy(s,a)*(r+gamma*v(next_s+1));
         end
+        value = value;
         V(s+1) = round(value,2);
 %         disp(string(s)+":"+string(V(s+1)))
     end
@@ -73,6 +77,41 @@ for k =1:1:3
     disp(reshape(V,4,4))
     v = V;
 end
+%%  POLICY IMPROVEMENT
+new_policy = policy;
+while 1
+    stable_policy = true;
+    for s =S
+        if s==0
+            continue;
+        end
+        prev_action = get_action(policy(s+1,:))
+        new_policy_temp=zeros(4,1);
+        temp = [];
+        for a = A
+                next_s = next_state(s,a); % 행동 a 후의 s의 다음 상태 next_s
+                r = get_reward(s,a); % 보상
+                temp = [temp,r+gamma*v(next_s+1)];
+        end
+        a_list=argmax(temp);
+        for j=1:1:length(a_list)
+            new_policy_temp(a_list(j)) = 1/length(a_list);
+        end
+        new_action=get_action(new_policy_temp')
+        new_policy(s+1,:)=new_policy_temp;
+        if new_action-prev_action <0.0001
+            stable_policy = true;
+            policy = new_policy;
+        else
+             stable_policy = false;
+        end
+    end
+    if stable_policy ==true
+        break;
+    end
+end
+%% DRAW
+draw_policy(policy);
 
 
 %% functions 
@@ -128,6 +167,29 @@ function next_s =next_state(s,a)
  
 end
 
+function index_list=argmax(temp)
+    index_list = [];
+    prev_value = 0;
+    for j = 1:1:length(temp)
+        [value,ind]=max(temp);
+
+        if j>1
+            if prev_value ~= value
+                break;
+            end
+        end
+        index_list(end+1) = ind+j-1;
+        temp(ind)=[];
+        prev_value = value;
+    end
+end
+
+function a= get_action(policy)
+    p= round(policy(1,:)*2000);
+    pp = [ones(p(1),1);2*ones(p(2),1);3*ones(p(3),1);4*ones(p(4),1)];
+    pp = pp(randperm(length(pp)));
+    a = pp(1);
+end
 
 function r =get_reward(s,a)
     r = -1;
@@ -137,8 +199,28 @@ end
 function p =get_policy(policy,s,a)
     p = 0.25;
 end
+function draw_policy(policy)
+    for i =0:2:8
+        plot([0 8],[i i],'k-');
+        plot([i i],[0 8],'k-');
+        hold on;
+    end
+    X = [1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 ];
+    Y = [1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 ];
 
-
-
-
+    for i = 1:1:length(X)
+            x = (X(i))*2-1;
+            y = (4-Y(i))*2+1;
+            if sum(i==[1,16])>=1
+                text(x,y,string(0));
+            else
+                plot([x  x],[y,y+policy(i,1)],"r-","LineWidth",3); % up
+                plot([x  x],[y,y-policy(i,2)],"r-","LineWidth",3); % down
+                plot([x  x+policy(i,3)],[y,y],"r-","LineWidth",3); % right
+                plot([x  x-policy(i,4)],[y,y],"r-","LineWidth",3); % left
+                text(x,y,string(i-1));
+            end
+    end
+    daspect([1,1,1]);
+end
 
