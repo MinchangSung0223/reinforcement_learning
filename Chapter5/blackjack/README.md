@@ -1,3 +1,5 @@
+run example5_1.m
+
 ## episodes num = 10000
 
 ![untitled_1](https://user-images.githubusercontent.com/53217819/115246047-7feb6e00-a160-11eb-8965-546125d4fbcd.png)
