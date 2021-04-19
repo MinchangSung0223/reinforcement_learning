@@ -1,1 +1,1 @@
-This Repository is reinforcement_learning 2nd Matlab Example Code
+This Repository is Matlab Example Code of reinforcement_learning second edition
