@@ -9,8 +9,15 @@ S = [A,B];
 
 Action = [[A,A];[A,B];[B,A];[B,B]];
 Terminal_Action =[[A,T];[B,T]];
-Episodes={[A,3,A,2,B,-4,A,+4,B,-3];...
-          [B,-2,A,+3,B,-3]
+Episodes={[A,0,B,6];...
+          [A,3];...
+          [A,2,B,0,A,3];...
+          [B,0,A,2,B,2];...
+          [B,0,A,3];...
+          [B,2];...
+          [B,6];...
+          [B,2];...
+          [B,6];...
           };
 
 
@@ -77,7 +84,17 @@ for i = 1:1:length(Episodes)
             Terminal_Count(ind)=Terminal_Count(ind)+1;
             Terminal_Reward{ind} = [Terminal_Reward{ind} ,prev_R];
         end
-    end   
+    end
+    if length(S)==1
+            ind = 0;
+            for j=1:1:length(Terminal_Action)
+                if sum([prev_s,T]==Terminal_Action(j,:))==2
+                    ind=j;
+                end
+            end
+            Terminal_Count(ind)=Terminal_Count(ind)+1;
+            Terminal_Reward{ind} = [Terminal_Reward{ind} ,prev_R];
+    end
 end
 expected_reward(1) = mean(Action_Reward{1});
 expected_reward(2) = mean(Action_Reward{2});
@@ -102,7 +119,7 @@ target_nodes = {'A','B','A','B','T','T'};
 edge_weights = transition_prob;
 del_ind =[]
 for i = length(edge_weights):-1:1
-    if edge_weights(i)==0
+    if edge_weights(i)==0 
         source_nodes(i) = [];
         target_nodes(i) = [];
         edge_weights(i) = [];
@@ -120,7 +137,7 @@ target_nodes = {'A','B','A','B','T','T'};
 edge_weights = expected_reward;
 del_ind =[]
 for i = length(edge_weights):-1:1
-    if edge_weights(i)==0
+    if transition_prob(i)==0
         source_nodes(i) = [];
         target_nodes(i) = [];
         edge_weights(i) = [];
@@ -131,7 +148,6 @@ h = plot(G,'EdgeLabel',G.Edges.Weight);
 h.MarkerSize = 20;
 h.NodeColor = [1,0,0];
 h.EdgeColor = [0,0,0];
-
 
 
 
