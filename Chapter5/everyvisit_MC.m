@@ -1,17 +1,9 @@
 clc;
-
 clear;
-
 close all;
-
- 
-
 A = 1;
-
 B = 2;
-
 S = [A,B];
-
 Episodes={[A,3,A,2,B,-4,A,+4,B,-3];...
           [B,-2,A,+3,B,-3]
           };
