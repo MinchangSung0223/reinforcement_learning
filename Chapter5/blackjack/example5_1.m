@@ -265,6 +265,19 @@ end
 
 
 
+function ind = find_state_index(s,S)
+    ind = 0;    
+    for j =1:1:size(S,1)
+        s_ =S(j,:);
+%         disp("---------------s--------------")
+%         disp(s)
+%         disp("---------------s2--------------")
+%         disp(s_)
+        if s(1) == s_(1) && s(2) == s_(2) && s(3) == s_(3)
+            ind = j;
+        end
+    end
 
+end
 
 
