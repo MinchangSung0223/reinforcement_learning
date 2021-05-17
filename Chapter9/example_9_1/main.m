@@ -36,9 +36,9 @@ figure;
 plot(STATES,values)
 function val=get_Value(V,s)
     global STEP_RANGE
-    if check_terminal_state(s)
+    if check_terminal_state(s)==1
         val=0;
-    else
+    elseif check_terminal_state(s)==0
         group_index = floor((s)/(STEP_RANGE))+1;
         if group_index==11
              group_index = 10;
@@ -61,5 +61,53 @@ function ret = check_terminal_state(state)
         if i==state
             ret=1;
         end
+    end
+end
+
+function [state_trajectory,reward]=play_randomwalk
+    global N_STATES
+    global START_STATE
+    global END_STATES
+    global STEP_RANGE
+    state_trajectory=[];
+    state = START_STATE;
+    reward = 0;
+    while(1)
+        action = get_action();
+        state_trajectory(end+1) = state;
+        [state,reward]=next_state(state,action);
+        if check_terminal_state(state)==1
+            break;
+        end
+        
+    end
+    
+end
+
+function action = get_action
+    if rand>0.5
+        action= 1;
+    else
+        action = -1;
+    end
+end
+function [state,reward] = next_state(state,action)
+    global N_STATES
+    global STEP_RANGE
+    step=action*(floor(rand*(STEP_RANGE))+1);
+    state = state+step;
+    state = max([min([state, N_STATES + 1]), 0]);
+    reward =get_reward(state);
+
+    
+end
+function reward=get_reward(state)
+    global N_STATES
+    if state ==0
+        reward = -1;
+    elseif state==N_STATES+1
+        reward=1;
+    else
+        reward=0;
     end
 end
