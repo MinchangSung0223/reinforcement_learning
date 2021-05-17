@@ -1,0 +1,35 @@
+global N_STATES
+global START_STATE
+global END_STATES
+global STEP_RANGE
+
+N_STATES = 1000
+START_STATE = 500;
+END_STATES = [0, N_STATES + 1]
+STEP_RANGE = 100
+EPISODES = 1000;
+LEFT = -1;
+RIGHT= 1;
+ACTIONS = [LEFT,RIGHT];
+STATES = 1:1:N_STATES
+
+alpha = 2*10^(-5);
+group_size = 10;
+V = zeros(group_size,1)
+distribution=zeros(N_STATES+2,1);
+for ep = 1:1:EPISODES
+     [state_trajectory,reward]=play_randomwalk;
+     for s = state_trajectory
+         delta = alpha * (reward - value_function.value(s))
+         value_function.update(delta,s)
+         distribution(s+1)=distribution(s+1)+1;
+     end
+end
+values = []
+for s = STATES
+   values=[values, value_function.value(s)];
+end
+distribution = distribution./sum(distribution);
+plot(STATES,distribution(2:end-1))
+plot(STATES,values)
+function get_Value(Value_
