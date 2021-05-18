@@ -1,3 +1,5 @@
+close all;
+clear;
 global N_STATES
 global START_STATE
 global END_STATES
@@ -14,13 +16,16 @@ alpha = 2*10^(-5);
 group_size = 10;
 V = zeros(group_size,1)
 distribution=zeros(N_STATES+2,1);
- tic
+tic
 for ep = 1:1:EPISODES
      [state_trajectory,reward]=play_randomwalk;
      for i = 1:1:length(state_trajectory)
          s = state_trajectory(i);
-         delta = alpha * (reward - get_Value(V,s));
-         V = update_Value(V,s,delta);
+         group_index = floor((s)/(STEP_RANGE))+1;
+         if group_index==11
+                  group_index = 10;
+         end
+         V(group_index) = V(group_index) + alpha * (reward - get_Value(V,s));
          distribution(s+1)=distribution(s+1)+1;
      end  
 end
@@ -46,14 +51,7 @@ function val=get_Value(V,s)
         val = V(group_index);
     end
 end
-function V=update_Value(V,s,delta)
-    global STEP_RANGE
-    group_index = floor((s)/(STEP_RANGE))+1;
-    if group_index==11
-        group_index = 10;
-    end
-    V(group_index) = V(group_index) +delta;
-end
+
 function ret = check_terminal_state(state)
     global END_STATES
     ret = 0;
@@ -98,8 +96,6 @@ function [state,reward] = next_state(state,action)
     state = state+step;
     state = max([min([state, N_STATES + 1]), 0]);
     reward =get_reward(state);
-
-    
 end
 function reward=get_reward(state)
     global N_STATES
