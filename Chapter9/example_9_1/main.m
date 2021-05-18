@@ -4,33 +4,36 @@ global N_STATES
 global START_STATE
 global END_STATES
 global STEP_RANGE
-
+global group_size;
 N_STATES = 1000
 START_STATE = 500;
 END_STATES = [0, N_STATES + 1]
-STEP_RANGE = 100
 EPISODES = 100000;
 STATES = 1:1:N_STATES
 
 alpha = 2*10^(-5);
-group_size = 10;
-V = zeros(group_size,1)
+group_size = 20;
+STEP_RANGE = N_STATES/group_size;
+
+V = zeros(group_size,1);
 distribution=zeros(N_STATES+2,1);
-tic
+
 for ep = 1:1:EPISODES
+    tic
      [state_trajectory,reward]=play_randomwalk;
      for i = 1:1:length(state_trajectory)
          s = state_trajectory(i);
          group_index = floor((s)/(STEP_RANGE))+1;
-         if group_index==11
-                  group_index = 10;
+         if group_index==group_size+1
+                  group_index = group_size;
          end
          V(group_index) = V(group_index) + alpha * (reward - get_Value(V,s));
          distribution(s+1)=distribution(s+1)+1;
      end  
+     toc
+
 end
 
-toc
 values = []
 for s = STATES
    values=[values, get_Value(V,s)];
@@ -39,14 +42,21 @@ distribution = distribution./sum(distribution);
 plot(STATES,distribution(2:end-1))
 figure;
 plot(STATES,values)
+
+
+
+
+
+
 function val=get_Value(V,s)
     global STEP_RANGE
+    global group_size;
     if check_terminal_state(s)==1
         val=0;
     elseif check_terminal_state(s)==0
         group_index = floor((s)/(STEP_RANGE))+1;
-        if group_index==11
-             group_index = 10;
+        if group_index==group_size+1
+             group_index = group_size;
          end
         val = V(group_index);
     end
@@ -107,3 +117,5 @@ function reward=get_reward(state)
         reward=0;
     end
 end
+
+
